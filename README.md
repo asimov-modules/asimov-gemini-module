@@ -1,4 +1,4 @@
-# ASIMOV Module
+# ASIMOV Gemini Module
 
 [![License](https://img.shields.io/badge/license-Public%20Domain-blue.svg)](https://unlicense.org)
 [![Compatibility](https://img.shields.io/badge/rust-1.70%2B-blue)](https://rust-lang.org)
@@ -18,8 +18,8 @@ This is a template module for the ASIMOV Platform.
 #### Installation via Homebrew
 
 ```console
-$ brew tap AsimovModules/tap
-$ brew install asimov-template-module
+brew tap AsimovModules/tap
+brew install asimov-gemini-module
 ```
 
 ### Installation from Source Code
@@ -27,17 +27,23 @@ $ brew install asimov-template-module
 #### Installation via Cargo
 
 ```console
-$ cargo install asimov-template-module
+cargo install asimov-gemini-module
 ```
 
 ## 👉 Examples
 
-TBD
+```console
+cargo run -- --help
+```
+
+```console
+cargo run -- --prompt "Why is the sky blue?" --api-key "your-api-key" --model pro
+```
 
 ## 👨‍💻 Development
 
 ```console
-$ git clone https://github.com/AsimovModules/asimov-template-module.git
+git clone https://github.com/AsimovModules/asimov-gemini-module.git
 ```
 
 - - -
