@@ -2,10 +2,11 @@
 
 use std::str::FromStr;
 
-use asimov_gemini_module::blocks::*;
-use asimov_gemini_module::blocks::{ApiKey, LlmModel};
 use clap::{Parser, ValueEnum};
 use colored::*;
+
+use asimov_gemini_module::blocks::*;
+use asimov_gemini_module::blocks::{ApiKey, LlmModel};
 
 fn main() -> std::io::Result<()> {
     let cli = Cli::parse();
@@ -26,6 +27,7 @@ fn main() -> std::io::Result<()> {
 
     Ok(())
 }
+
 #[derive(Parser)]
 #[command(name = "LLM Requester")]
 #[command(about = "CLI tool to interact with various Gemini models", long_about = None)]
@@ -57,6 +59,7 @@ impl From<ModelType> for LlmModel {
         }
     }
 }
+
 fn print_response(result: ResponseResult) {
     match result {
         Ok(response) => {

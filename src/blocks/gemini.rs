@@ -1,10 +1,11 @@
-use asimov_sdk::flow::derive::Block;
 use asimov_sdk::flow::{Block, BlockResult, BlockRuntime, InputPort, OutputPort, Port};
-
-pub mod model;
-pub use model::*;
+use asimov_sdk::flow::derive::Block;
 use protoflow::PortResult;
 use tracing::{debug, error, info};
+
+pub use model::*;
+
+pub mod model;
 
 /// A block that calls Gemini api.
 #[derive(Block, Clone)]
@@ -27,6 +28,7 @@ pub struct Gemini {
     #[parameter]
     pub api_key: ApiKey,
 }
+
 impl Gemini {
     pub fn new(
         input: InputPort<Request>,
@@ -86,13 +88,15 @@ impl Block for Gemini {
         Ok(())
     }
 }
+
 #[cfg(test)]
 mod tests {
     use core::str::FromStr;
 
-    use super::model::*;
+    use asimov_sdk::flow::{System, transports::MockTransport};
+
     use super::Gemini;
-    use asimov_sdk::flow::{transports::MockTransport, System};
+    use super::model::*;
 
     #[test]
     fn instantiate_gemini_block() {
