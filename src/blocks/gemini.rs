@@ -1,6 +1,8 @@
 use asimov_sdk::flow::{Block, BlockResult, BlockRuntime, InputPort, OutputPort, Port};
 use asimov_sdk::flow::derive::Block;
 use protoflow::PortResult;
+use tokio::runtime;
+use tokio::runtime::Runtime;
 use tracing::{debug, error, info};
 
 pub use model::*;
@@ -49,9 +51,12 @@ impl Gemini {
         info!(target:"Gemini:send", "Send Gemini result to output port");
         self.output.send(&response)
     }
-    fn call(&self, input: Request) -> ResponseResult {
+    fn call(&self, input: Request, rt: &Runtime) -> ResponseResult {
         info!(target: "Gemini:call", "Calling Gemini");
-        call_llm(self.llm_model.clone(), self.api_key.clone(), input)
+        let result = rt.block_on(async {
+            call_llm(self.llm_model.clone(), self.api_key.clone(), input).await
+        });
+        result
     }
     fn send_error(&self, error: &Error) -> PortResult<()> {
         info!(target:"Gemini:send_error", "Send error to the error port");
@@ -67,14 +72,16 @@ impl Gemini {
 impl Block for Gemini {
     fn execute(&mut self, _runtime: &dyn BlockRuntime) -> BlockResult<()> {
         info!(target:"Gemini::execute", "Executing Gemini block");
+        let rt = runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
         while let Some(input) = self.input.recv()? {
             if !self.output.is_connected() {
                 info!(target:"Gemini::execute", "Output Port is not connected");
                 continue;
             }
-            // let x = self.llm_model();
 
-            match self.call(input) {
+            match self.call(input, &rt) {
                 Ok(response) => {
                     debug!(target:"Gemini:execute",?response, "Gemini response");
                     self.send(&response)?;

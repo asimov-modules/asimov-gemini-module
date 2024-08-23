@@ -8,7 +8,8 @@ use colored::*;
 use asimov_gemini_module::blocks::*;
 use asimov_gemini_module::blocks::{ApiKey, LlmModel};
 
-fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
     let cli = Cli::parse();
 
     let request = Request {
@@ -22,7 +23,7 @@ fn main() -> std::io::Result<()> {
         gemini_model,
         ApiKey::from_str(&cli.api_key).unwrap(),
         request,
-    );
+    ).await;
     print_response(result);
 
     Ok(())
@@ -76,29 +77,25 @@ fn print_response(result: ResponseResult) {
 
             println!("{}", "Response:".bright_blue().bold());
             println!("{}", response.response);
-
-            if response.response.to_lowercase().contains("error") {
-                println!("{}", "An error was detected in the response.".red().bold());
-            }
         }
         Err(err) => {
             println!(
                 "{}: {}",
                 "Error".bright_red().bold(),
-                err.error().as_str_name().red().bold()
+                convert_to_string(&err.error_type, || err.error_type().as_str_name()).red().bold()
             );
 
-            if let Some(integration_error) = err.integration_error.as_ref() {
+            if let Some(rest_error) = err.rest_error {
                 println!(
                     "{}: {}",
-                    "Integration Error Type".bright_red().bold(),
-                    integration_error.error_type().as_str_name().red().bold()
+                    "Rest Error Type".bright_red().bold(),
+                    rest_error.error_type().as_str_name().red().bold()
                 );
 
-                if let Some(message) = &integration_error.message {
+                if let Some(message) = &rest_error.message {
                     println!(
                         "{}: {}",
-                        "Integration Error Message".bright_red().bold(),
+                        "Rest Error Message".bright_red().bold(),
                         message.red().bold()
                     );
                 }
@@ -106,3 +103,14 @@ fn print_response(result: ResponseResult) {
         }
     };
 }
+
+fn convert_to_string<F>(enum_value: &Option<i32>, value_function: F) -> &'static str
+    where
+        F: Fn() -> &'static str,
+{
+    match enum_value {
+        None => "",
+        Some(_) => value_function(),
+    }
+}
+
