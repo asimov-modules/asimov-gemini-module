@@ -1,6 +1,6 @@
 use asimov_sdk::flow::{Block, BlockResult, BlockRuntime, InputPort, OutputPort, Port};
 use asimov_sdk::flow::derive::Block;
-use protoflow::PortResult;
+use asimov_sdk::flow::PortResult;
 use tokio::runtime;
 use tokio::runtime::Runtime;
 use tracing::{debug, error, info};
@@ -49,7 +49,7 @@ impl Gemini {
     }
     fn send(&self, response: &Response) -> PortResult<()> {
         info!(target:"Gemini:send", "Send Gemini result to output port");
-        self.output.send(&response)
+        self.output.send(response)
     }
     fn call(&self, input: Request, rt: &Runtime) -> ResponseResult {
         info!(target: "Gemini:call", "Calling Gemini");
@@ -64,7 +64,7 @@ impl Gemini {
             info!(target:"Gemini:send_error", "Error port is not connected");
             Ok(())
         } else {
-            return self.error.send(&error);
+            return self.error.send(error);
         }
     }
 }
