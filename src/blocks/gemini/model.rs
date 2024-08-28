@@ -1,8 +1,8 @@
-pub use asimov_integrations::ApiKey;
-pub use asimov_integrations::llm::gemini::call_gemini as call_llm;
-pub use asimov_integrations::llm::model::GeminiModel as LlmModel;
-pub use asimov_integrations::llm::proto::LlmErrorMessage as Error;
-pub use asimov_integrations::llm::proto::LlmRequestMessage as Request;
-pub use asimov_integrations::llm::proto::LlmResponseMessage as Response;
+pub use asimov_integrations::key::ApiKey;
+pub use asimov_integrations::llm::gemini::call_gemini;
+pub use asimov_integrations::llm::GeminiModel;
+pub use asimov_integrations::llm::LlmErrorMessage;
+pub use asimov_integrations::llm::LlmRequestMessage;
+pub use asimov_integrations::llm::LlmResponseMessage;
 
-pub type ResponseResult = Result<Response, Error>;
+pub type ResponseResult = Result<LlmResponseMessage, LlmErrorMessage>;

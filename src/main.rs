@@ -6,20 +6,20 @@ use clap::{Parser, ValueEnum};
 use colored::*;
 
 use asimov_gemini_module::blocks::*;
-use asimov_gemini_module::blocks::{ApiKey, LlmModel};
+use asimov_gemini_module::blocks::{ApiKey};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let cli = Cli::parse();
 
-    let request = Request {
+    let request = LlmRequestMessage {
         prompt: cli.prompt,
         max_tokens: cli.max_tokens,
     };
 
     let gemini_model = cli.model.into();
 
-    let result = call_llm(
+    let result = call_gemini(
         gemini_model,
         ApiKey::from_str(&cli.api_key).unwrap(),
         request,
@@ -52,11 +52,11 @@ enum ModelType {
     Pro,
 }
 
-impl From<ModelType> for LlmModel {
+impl From<ModelType> for GeminiModel {
     fn from(model: ModelType) -> Self {
         match model {
-            ModelType::Flash => LlmModel::Gemini1_5Flash,
-            ModelType::Pro => LlmModel::Gemini1_5Pro,
+            ModelType::Flash => GeminiModel::Gemini1_5Flash,
+            ModelType::Pro => GeminiModel::Gemini1_5Pro,
         }
     }
 }

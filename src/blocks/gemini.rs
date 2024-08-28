@@ -7,25 +7,25 @@ use tracing::{debug, error, info};
 
 pub use model::*;
 
-pub mod model;
+mod model;
 
 /// A block that calls Gemini api.
 #[derive(Block, Clone)]
 pub struct Gemini {
     /// The input message stream.
     #[input]
-    pub input: InputPort<Request>,
+    pub input: InputPort<LlmRequestMessage>,
 
     /// The output message stream.
     #[output]
-    pub output: OutputPort<Response>,
+    pub output: OutputPort<LlmResponseMessage>,
 
     /// The output error message stream.
     #[output]
-    pub error: OutputPort<Error>,
+    pub error: OutputPort<LlmErrorMessage>,
 
     #[parameter]
-    pub llm_model: LlmModel,
+    pub llm_model: GeminiModel,
 
     #[parameter]
     pub api_key: ApiKey,
@@ -33,10 +33,10 @@ pub struct Gemini {
 
 impl Gemini {
     pub fn new(
-        input: InputPort<Request>,
-        output: OutputPort<Response>,
-        error: OutputPort<Error>,
-        llm_model: LlmModel,
+        input: InputPort<LlmRequestMessage>,
+        output: OutputPort<LlmResponseMessage>,
+        error: OutputPort<LlmErrorMessage>,
+        llm_model: GeminiModel,
         api_key: ApiKey,
     ) -> Self {
         Self {
@@ -47,18 +47,18 @@ impl Gemini {
             api_key,
         }
     }
-    fn send(&self, response: &Response) -> PortResult<()> {
+    fn send(&self, response: &LlmResponseMessage) -> PortResult<()> {
         info!(target:"Gemini:send", "Send Gemini result to output port");
         self.output.send(response)
     }
-    fn call(&self, input: Request, rt: &Runtime) -> ResponseResult {
+    fn call(&self, input: LlmRequestMessage, rt: &Runtime) -> ResponseResult {
         info!(target: "Gemini:call", "Calling Gemini");
         let result = rt.block_on(async {
-            call_llm(self.llm_model.clone(), self.api_key.clone(), input).await
+            call_gemini(self.llm_model.clone(), self.api_key.clone(), input).await
         });
         result
     }
-    fn send_error(&self, error: &Error) -> PortResult<()> {
+    fn send_error(&self, error: &LlmErrorMessage) -> PortResult<()> {
         info!(target:"Gemini:send_error", "Send error to the error port");
         if !self.error.is_connected() {
             info!(target:"Gemini:send_error", "Error port is not connected");
@@ -113,7 +113,7 @@ mod tests {
                 s.input(),
                 s.output(),
                 s.output(),
-                LlmModel::Gemini1_5Flash,
+                GeminiModel::Gemini1_5Flash,
                 ApiKey::from_str("asdf").unwrap(),
             ));
         });
