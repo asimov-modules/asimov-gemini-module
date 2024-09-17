@@ -1,12 +1,12 @@
 // This is free and unencumbered software released into the public domain.
-
+use asimov_integrations::llm::LlmErrorTypeMessage;
 use std::str::FromStr;
 
 use clap::{Parser, ValueEnum};
 use colored::*;
 
+use asimov_gemini_module::blocks::ApiKey;
 use asimov_gemini_module::blocks::*;
-use asimov_gemini_module::blocks::{ApiKey};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -23,7 +23,8 @@ async fn main() -> std::io::Result<()> {
         gemini_model,
         ApiKey::from_str(&cli.api_key).unwrap(),
         request,
-    ).await;
+    )
+    .await;
     print_response(result);
 
     Ok(())
@@ -79,38 +80,40 @@ fn print_response(result: ResponseResult) {
             println!("{}", response.response);
         }
         Err(err) => {
-            println!(
-                "{}: {}",
-                "Error".bright_red().bold(),
-                convert_to_string(&err.error_type, || err.error_type().as_str_name()).red().bold()
-            );
-
-            if let Some(rest_error) = err.rest_error {
-                println!(
-                    "{}: {}",
-                    "Rest Error Type".bright_red().bold(),
-                    rest_error.error_type().as_str_name().red().bold()
-                );
-
-                if let Some(message) = &rest_error.message {
-                    println!(
-                        "{}: {}",
-                        "Rest Error Message".bright_red().bold(),
-                        message.red().bold()
-                    );
+            if let Some(x) = err.error {
+                match x {
+                    asimov_integrations::llm::llm_error_message::Error::RestError(rest_error) => {
+                        print_rest_error(rest_error);
+                    }
+                    asimov_integrations::llm::llm_error_message::Error::ErrorType(error_type) => {
+                        print_llm_error(LlmErrorTypeMessage::try_from(error_type).unwrap());
+                    }
                 }
             }
         }
     };
 }
 
-fn convert_to_string<F>(enum_value: &Option<i32>, value_function: F) -> &'static str
-    where
-        F: Fn() -> &'static str,
-{
-    match enum_value {
-        None => "",
-        Some(_) => value_function(),
-    }
+fn print_llm_error(err: LlmErrorTypeMessage) {
+    println!(
+        "{}: {}",
+        "Error".bright_red().bold(),
+        err.as_str_name().red().bold()
+    );
 }
 
+fn print_rest_error(rest_error: asimov_integrations::error::RestErrorMessage) {
+    println!(
+        "{}: {}",
+        "Rest Error Type".bright_red().bold(),
+        rest_error.error_type().as_str_name().red().bold()
+    );
+
+    if let Some(message) = &rest_error.message {
+        println!(
+            "{}: {}",
+            "Rest Error Message".bright_red().bold(),
+            message.red().bold()
+        );
+    }
+}
