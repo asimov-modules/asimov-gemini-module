@@ -1,0 +1,21 @@
+# See: https://asimov-specs.github.io/module-manifest/
+name: gemini
+label: Gemini
+title: ASIMOV Gemini Module
+summary: LLM inference powered by Gemini
+links:
+  - https://github.com/asimov-modules/asimov-gemini-module
+  - https://crates.io/crates/asimov-gemini-module
+provides:
+  programs:
+    - asimov-gemini-prompter
+config:
+  variables:
+    - name: api-key
+      environment: GEMINI_API_KEY
+    - name: endpoint
+      environment: GEMINI_API_ENDPOINT
+      default: https://generativelanguage.googleapis.com
+    - name: model
+      environment: GEMINI_MODEL
+      default: gemini-2.5-flash
