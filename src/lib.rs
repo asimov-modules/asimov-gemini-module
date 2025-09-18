@@ -113,18 +113,22 @@ pub fn generate(input: impl AsRef<str>, options: &Options) -> Result<Vec<String>
 
     if let Some(chunks) = resp["candidates"].as_array() {
         for chunk in chunks {
-            if let Some(content) = chunk["content"].as_object() {
-                if content["role"].as_str().is_none_or(|r| r != "model") {
-                    continue;
-                }
+            let content = &chunk["content"];
+            if !content.is_object() {
+                continue;
+            }
 
-                content["parts"]
-                    .as_array()
-                    .into_iter()
-                    .flatten()
-                    .filter_map(|p| p["text"].as_str())
-                    .for_each(|t| responses.push(t.to_string()));
-            };
+            if content["role"].as_str().is_none_or(|r| r != "model") {
+                continue;
+            }
+
+            if let Some(parts) = content["parts"].as_array() {
+                for part in parts {
+                    if let Some(text) = part["text"].as_str() {
+                        responses.push(text.to_string())
+                    }
+                }
+            }
 
             if let Some(stop_reason) = chunk["finishReason"].as_str() {
                 tracing::debug!(stop_reason);
